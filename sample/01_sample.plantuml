@@ -1,0 +1,13 @@
+@startuml sample
+actor User
+participant App
+participant "MainLayout.vue" as Layout
+participant "DashboardPage.vue" as Page
+
+User -> App : アプリ起動
+App -> Layout : MainLayout コンポーネントを描画
+App -> Page : router-view で DashboardPage を読み込み
+Page -> Layout : <slot> を通じてコンテンツ挿入
+Layout -> Layout : ヘッダー、フッター描画
+Layout -> User : 画面全体を表示（レイアウト + ページ）
+@enduml

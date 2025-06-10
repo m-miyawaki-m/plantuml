@@ -1,0 +1,20 @@
+@startuml v-slot
+actor User
+participant "DashboardPage.vue" as Page
+participant "MainLayout.vue" as Layout
+participant "HeaderComponent" as Header
+participant "SubComponent" as Sub
+participant "MainContent" as Main
+
+User -> Page : ページルーティングで表示開始
+Page -> Layout : MainLayout を import
+Page -> Header : headerスロット用に呼び出し
+Page -> Sub : subareaスロット用に呼び出し
+Page -> Main : mainareaスロット用に呼び出し
+
+Page -> Layout : header に HeaderComponent を渡す
+Page -> Layout : subarea に SubComponent を渡す
+Page -> Layout : mainarea に MainContent を渡す
+
+Layout -> User : header + subarea + mainarea を統合表示
+@enduml

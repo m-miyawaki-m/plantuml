@@ -1,0 +1,167 @@
+素晴らしい質問です。
+Vuex の **getter に複雑な条件や分岐をどこまで書くべきか**、つまり「**getter を store に書くべきか、それともページ内の computed にロジックを書くべきか？**」は、保守性や設計方針に深く関わる重要なポイントです。
+
+---
+
+## ✅ 結論から言うと：
+
+### ◾ **条件ロジックが共通化・再利用される場合：Vuex の getter に書くべき**
+
+### ◾ **そのページ固有のロジックなら：ページ（コンポーネント）内に書くべき**
+
+---
+
+## 🧠 判断基準：表形式で整理
+
+| ケース                                          | 書く場所                          | 理由                          |
+| -------------------------------------------- | ----------------------------- | --------------------------- |
+| 複数ページで使う可視制御（例：role や mode によるエリア表示）         | ✅ store の getter              | ロジックの再利用・一元管理が可能になるため       |
+| ロジックがアプリの状態（state）に密接に依存している                 | ✅ store の getter              | ロジックが store の状態構造を前提としているため |
+| ページ固有の条件（例：このページだけ `paramX && paramY` の時に表示） | ✅ ページ内 `computed`             | グローバルにする必要がなく、局所的に閉じたほうが明瞭  |
+| 一時的 or デバッグ用の条件                              | ✅ ページ内 `methods` や `computed` | シンプルに済ませたいとき・将来削除される見込み     |
+
+---
+
+## ✅ 実例で比較
+
+### 🔷 store に書くべき例（再利用性あり）
+
+```js
+getters: {
+  isAreaVisible: (state) => (area, role) => {
+    if (role === 'admin') return true;
+    return state.visibleAreas[area];
+  }
+}
+```
+
+* **複数ページ**で `this.$store.getters.isAreaVisible('mainarea', role)` のように使える。
+
+---
+
+### 🔶 ページに書くべき例（このページだけのUIロジック）
+
+```js
+computed: {
+  showDetailArea() {
+    return this.someFlag && this.localDataList.length > 3;
+  }
+}
+```
+
+* 他で使わないし、UI 仕様上このページにだけ関係している。
+
+---
+
+## 🛠 ハイブリッドパターンもOK
+
+* **Getter で基本的な状態を取得**（例：`isAdmin`、`isEditMode`）
+* **ページ内でそれらを組み合わせて判断**
+
+```js
+computed: {
+  showMainArea() {
+    return this.$store.getters.isAdmin &&
+           this.$store.getters.isEditMode &&
+           this.localPageFlag;
+  }
+}
+```
+
+---
+
+## ✅ まとめ
+
+| 判断軸      | 推奨する実装場所                    |
+| -------- | --------------------------- |
+| 共通・横断的   | Vuex getter                 |
+| 単独・ページ限定 | ページ内の computed/methods      |
+| 両方関係する   | getter で基本値、computed で組み立てる |
+
+---
+
+ご希望があれば、あなたの現在の `store` 定義やページ構成に即したリファクタリング提案も可能です！お気軽にお申し付けください。
+
+素晴らしい質問です。
+Vuex の **getter に複雑な条件や分岐をどこまで書くべきか**、つまり「**getter を store に書くべきか、それともページ内の computed にロジックを書くべきか？**」は、保守性や設計方針に深く関わる重要なポイントです。
+
+---
+
+## ✅ 結論から言うと：
+
+### ◾ **条件ロジックが共通化・再利用される場合：Vuex の getter に書くべき**
+
+### ◾ **そのページ固有のロジックなら：ページ（コンポーネント）内に書くべき**
+
+---
+
+## 🧠 判断基準：表形式で整理
+
+| ケース                                          | 書く場所                          | 理由                          |
+| -------------------------------------------- | ----------------------------- | --------------------------- |
+| 複数ページで使う可視制御（例：role や mode によるエリア表示）         | ✅ store の getter              | ロジックの再利用・一元管理が可能になるため       |
+| ロジックがアプリの状態（state）に密接に依存している                 | ✅ store の getter              | ロジックが store の状態構造を前提としているため |
+| ページ固有の条件（例：このページだけ `paramX && paramY` の時に表示） | ✅ ページ内 `computed`             | グローバルにする必要がなく、局所的に閉じたほうが明瞭  |
+| 一時的 or デバッグ用の条件                              | ✅ ページ内 `methods` や `computed` | シンプルに済ませたいとき・将来削除される見込み     |
+
+---
+
+## ✅ 実例で比較
+
+### 🔷 store に書くべき例（再利用性あり）
+
+```js
+getters: {
+  isAreaVisible: (state) => (area, role) => {
+    if (role === 'admin') return true;
+    return state.visibleAreas[area];
+  }
+}
+```
+
+* **複数ページ**で `this.$store.getters.isAreaVisible('mainarea', role)` のように使える。
+
+---
+
+### 🔶 ページに書くべき例（このページだけのUIロジック）
+
+```js
+computed: {
+  showDetailArea() {
+    return this.someFlag && this.localDataList.length > 3;
+  }
+}
+```
+
+* 他で使わないし、UI 仕様上このページにだけ関係している。
+
+---
+
+## 🛠 ハイブリッドパターンもOK
+
+* **Getter で基本的な状態を取得**（例：`isAdmin`、`isEditMode`）
+* **ページ内でそれらを組み合わせて判断**
+
+```js
+computed: {
+  showMainArea() {
+    return this.$store.getters.isAdmin &&
+           this.$store.getters.isEditMode &&
+           this.localPageFlag;
+  }
+}
+```
+
+---
+
+## ✅ まとめ
+
+| 判断軸      | 推奨する実装場所                    |
+| -------- | --------------------------- |
+| 共通・横断的   | Vuex getter                 |
+| 単独・ページ限定 | ページ内の computed/methods      |
+| 両方関係する   | getter で基本値、computed で組み立てる |
+
+---
+
+ご希望があれば、あなたの現在の `store` 定義やページ構成に即したリファクタリング提案も可能です！お気軽にお申し付けください。

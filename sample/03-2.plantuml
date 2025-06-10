@@ -1,0 +1,24 @@
+@startuml
+actor User
+participant "DashboardPage.vue" as Page
+participant "Vuex Store" as Store
+participant "MainLayout.vue" as Layout
+participant "MainContent" as Main
+
+== 初期描画 ==
+User -> Page : ページアクセス
+Page -> Store : mainareaVisible を取得
+Store --> Page : true
+Page -> Layout : mainareaVisible=true を渡す
+Layout -> Main : 表示（v-if）
+
+== 表示切り替え ==
+User -> Page : トグルボタンをクリック
+Page -> Store : commit('setMainareaVisible', false)
+Store -> Page : mainareaVisible が false に更新（watch/reactive）
+
+Page -> Layout : mainareaVisible=false を渡す
+alt mainareaVisible == false
+    note right of Layout : MainContent を非表示（v-if で未描画）
+end
+@enduml

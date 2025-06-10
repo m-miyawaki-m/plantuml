@@ -1,0 +1,19 @@
+@startuml
+actor User
+participant "DashboardPage.vue" as Page
+participant "Vuex Store" as Store
+participant "MainLayout.vue" as Layout
+participant "MainContent" as Main
+
+== 初期表示 ==
+User -> Page : ページアクセス
+Page -> Store : getters.isAreaVisible('mainarea')
+Store --> Page : true（表示する）
+
+Page -> Layout : mainareaVisible = true を渡す
+alt mainareaVisible == true
+    Layout -> Main : MainContent を表示
+else
+    note right of Layout : MainContent は表示されない
+end
+@enduml
