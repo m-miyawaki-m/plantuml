@@ -1,0 +1,31 @@
+@startuml sampl
+actor User
+participant "DashboardPage.vue" as Page
+participant "MainLayout.vue" as Layout
+participant "PanelArea.vue" as Panel
+
+== 初期描画 ==
+User -> Page : ページアクセス
+Page -> Layout : props: panelAreaVisible = false
+
+== ボタン押下 ==
+User -> Page : 「パネル表示」ボタンをクリック
+Page -> Page : panelAreaVisible = true に更新
+Page -> Layout : props: panelAreaVisible = true に再バインド
+
+alt panelAreaVisible == true
+  Layout -> Panel : 表示（v-if=true）
+else
+  note right of Layout : PanelArea 非表示
+end
+
+== PanelArea 側から非表示要求（emit）==
+User -> Panel : 閉じるボタンをクリック
+Panel -> Layout : emit('update:panelAreaVisible', false)
+Layout -> Page : 受信して panelAreaVisible = false に更新
+Page -> Layout : props: panelAreaVisible = false に再バインド
+
+alt panelAreaVisible == false
+  Layout -> Panel : 非表示（v-if=false）
+end
+@enduml

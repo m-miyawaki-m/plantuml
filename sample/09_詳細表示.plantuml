@@ -1,0 +1,65 @@
+@startuml sample
+actor User
+participant "DashboardPage.vue" as Page
+participant "Vuex Store" as Store
+participant "MainLayout.vue" as Layout
+participant "PanelArea.vue" as Panel
+
+== 初期描画 ==
+User -> Page : ページアクセス
+Page -> Layout : v-model:panelAreaVisible = false
+note right of Layout
+  v-model:panelAreaVisible を介して
+  props: panelAreaVisible を受け取り
+  emits: update:panelAreaVisible で更新を通知
+end note
+Layout -> Panel : 表示なし（v-if=false）
+
+== ボタン押下（TypeA/B/C）==
+User -> Page : 「TypeA」ボタンをクリック
+Page -> Page : openPanel('TypeA')
+note right of Page
+  メソッド名：openPanel
+  引数：type（'TypeA' | 'TypeB' | 'TypeC'）
+  戻り値：なし（void）
+  ストア利用：
+    - 項目：panelContentType
+    - 利用方法：mutation 'setPanelContentType' を commit
+  その他：
+    - panelAreaVisible を true に設定し v-model 経由で Layout に渡す
+end note
+
+Page -> Store : commit('setPanelContentType', 'TypeA')
+Page -> Page : panelAreaVisible = true に更新
+Page -> Layout : v-model:panelAreaVisible = true（リアクティブに伝播）
+
+alt panelAreaVisible == true
+  Layout -> Panel : 表示開始（v-if=true）
+end
+
+== PanelArea の内容取得 ==
+Panel -> Store : getters.panelContentType
+note right of Panel
+  メソッド名：computed panelContentType
+  引数：なし
+  戻り値：string（'TypeA' | 'TypeB' | 'TypeC'）
+  ストア利用：
+    - 項目：panelContentType
+    - 利用方法：getter で state.panelContentType を取得
+  その他：
+    - 値に応じてテンプレート内の表示内容を分岐
+end note
+Store --> Panel : 'TypeA'
+Panel -> Panel : 'TypeA' に応じた内容を描画
+
+== 閉じる操作 ==
+User -> Panel : 閉じるボタンをクリック
+Panel -> Layout : emit('update:panelAreaVisible', false)
+Layout -> Page : v-model:panelAreaVisible の更新通知
+Page -> Page : panelAreaVisible = false に更新
+Page -> Layout : v-model:panelAreaVisible = false（再反映）
+
+alt panelAreaVisible == false
+  Layout -> Panel : 表示終了（v-if=false）
+end
+@enduml

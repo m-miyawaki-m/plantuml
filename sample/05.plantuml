@@ -1,0 +1,20 @@
+@startuml sampele
+actor User
+participant "DashboardPage.vue" as Page
+participant "MainLayout.vue" as Layout
+participant "PanelArea.vue" as Panel
+
+== 初期表示 ==
+User -> Page : ページルーティング
+Page -> Layout : v-model:panelAreaVisible = false を渡す
+Layout -> Panel : 表示されない（v-if=false）
+
+== ボタン押下による表示切替 ==
+User -> Page : 「パネル表示」ボタンをクリック
+Page -> Page : panelAreaVisible = true に更新
+Page -> Layout : v-model:panelAreaVisible = true をバインド
+
+alt panelAreaVisible == true
+  Layout -> Panel : 表示開始（v-if=true）
+end
+@enduml

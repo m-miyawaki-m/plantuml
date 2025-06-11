@@ -1,0 +1,113 @@
+@startuml sample
+actor User
+participant "DashboardPage.vue" as Page
+participant "MainLayout.vue" as Layout
+participant "PanelArea.vue" as Panel
+participant "CardComponent.vue" as Card
+participant "InputComponent.vue" as Input
+participant "Vuex Store" as Store
+
+== 初期描画 ==
+User -> Page : ページアクセス
+activate Page
+
+Page -> Layout : v-model:panelAreaVisible = false
+activate Layout
+note right of Layout
+  v-model:panelAreaVisible を介して  
+  props: panelAreaVisible を受け取り  
+  emits: update:panelAreaVisible で更新を通知
+end note
+Layout -> Panel : 表示なし（v-if=false）
+activate Panel
+deactivate Panel
+deactivate Layout
+deactivate Page
+
+== ボタン押下（TypeA/B/C）==
+User -> Page : 「TypeA」ボタンをクリック
+activate Page
+
+Page -> Page : openPanel('TypeA')
+note right of Page
+  メソッド名：openPanel  
+  引数：type（'TypeA' | 'TypeB' | 'TypeC'）  
+  戻り値：なし（void）  
+  ストア利用：  
+    - 項目：panelContentType  
+    - 利用方法：mutation 'setPanelContentType' を commit  
+  その他：  
+    - panelAreaVisible を true に設定し  
+      v-model 経由で Layout に渡す
+end note
+
+Page -> Store : commit('setPanelContentType', 'TypeA')
+activate Store
+deactivate Store
+
+Page -> Page : panelAreaVisible = true に更新
+Page -> Layout : v-model:panelAreaVisible = true（リアクティブに伝播）
+activate Layout
+
+alt panelAreaVisible == true
+  Layout -> Panel : 表示開始（v-if=true）
+  activate Panel
+  deactivate Panel
+end
+
+deactivate Layout
+deactivate Page
+
+== PanelArea の内容取得 ==
+Panel -> Store : getters.panelContent
+activate Store
+
+Store -> Store : state.panelType を参照
+alt panelType == 'TypeA'
+  Store -> Store : return state.typeAData
+else panelType == 'TypeB'
+  Store -> Store : return state.typeBData
+else panelType == 'TypeC'
+  Store -> Store : return state.typeCData
+end
+
+Store --> Panel : 対応するデータ（例：TypeAData）
+deactivate Store
+
+Panel -> Panel : コメントリストに設定（配列として保持）
+
+loop データ件数分
+  Panel -> Card : CardComponent を生成（:data=TypeXData[i]）
+end
+
+Panel -> Input : InputComponent をマウント（v-model バインド）
+
+note right of Panel
+  コメントリスト構造：  
+  - タイトル（固定）  
+  - カードエリア（CardComponent をデータ分ループ）  
+  - インプットエリア（InputComponent）  
+  - フッター（ボタン等）
+end note
+
+== 閉じる操作 ==
+User -> Panel : 閉じるボタンをクリック
+activate Panel
+
+Panel -> Layout : emit('update:panelAreaVisible', false)
+activate Layout
+Layout -> Page : v-model:panelAreaVisible の更新通知
+activate Page
+
+Page -> Page : panelAreaVisible = false に更新
+Page -> Layout : v-model:panelAreaVisible = false（再反映）
+deactivate Page
+deactivate Layout
+deactivate Panel
+
+alt panelAreaVisible == false
+  Layout -> Panel : 表示終了（v-if=false）
+  activate Panel
+  deactivate Panel
+end
+@enduml

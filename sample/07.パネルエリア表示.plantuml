@@ -1,0 +1,33 @@
+@startuml sample
+actor User
+participant "DashboardPage.vue" as Page
+participant "Vuex Store" as Store
+participant "MainLayout.vue" as Layout
+participant "PanelArea.vue" as Panel
+
+== 初期描画 ==
+User -> Page : ページアクセス
+Page -> Layout : props: panelAreaVisible = false
+Layout -> Panel : 表示なし（v-if=false）
+
+== ボタン押下 ==
+User -> Page : 「パネル表示（TypeA）」ボタンをクリック
+Page -> Store : commit('setPanelContentType', 'TypeA')
+Page -> Page : panelAreaVisible = true に更新
+Page -> Layout : props: panelAreaVisible = true
+
+alt panelAreaVisible == true
+  Layout -> Panel : 表示開始（v-if=true）
+end
+
+== PanelArea 内部処理 ==
+Panel -> Store : getters.panelContentType を取得
+Store --> Panel : 'TypeA'
+Panel -> Panel : 表示内容 = 'TypeA' に応じた描画
+
+== Panel 内操作で閉じる ==
+User -> Panel : 閉じるボタン
+Panel -> Layout : emit('update:panelAreaVisible', false)
+Layout -> Page : panelAreaVisible = false に更新
+Page -> Layout : props: panelAreaVisible = false
+@enduml

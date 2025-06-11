@@ -1,0 +1,87 @@
+@startuml 初期表示とパネルデータ連携
+
+actor User
+participant "DashboardPage.vue" as Page
+participant "MainLayout.vue" as Layout
+participant "PanelArea.vue" as Panel
+participant "CardComponent.vue" as Card
+participant "InputComponent.vue" as Input
+participant "Vuex Store" as Store
+database "APIサーバー" as API
+
+== 初期ページアクセス ==
+User -> Page : ページアクセス
+activate Page
+
+Page -> API : データ5件を並列取得
+activate API
+
+note right of Page
+  処理：fetchAllData  
+  内容：初期描画前に5種類のデータをAPI経由で取得  
+  処理対象：TypeA ～ TypeE  
+  備考：Promise.all 等で同時取得
+end note
+
+API --> Page : 各データ(typeA, typeB, ...)
+deactivate API
+
+Page -> Store : commit('setTypeAData', dataA)
+Page -> Store : commit('setTypeBData', dataB)
+Page -> Store : commit('setTypeCData', dataC)
+Page -> Store : commit('setTypeDData', dataD)
+Page -> Store : commit('setTypeEData', dataE)
+
+note right of Store
+  各データを state に保存  
+  - typeAData, typeBData, ...
+  - mutation 'setTypeXData' で commit
+end note
+
+== パネル表示状態 ==
+Page -> Layout : v-model:panelAreaVisible=true
+activate Layout
+
+note right of Layout
+  props: panelAreaVisible  
+  emits: update:panelAreaVisible  
+  表示制御：v-if="panelAreaVisible"
+end note
+
+Layout -> Panel : v-if=true → 表示開始
+activate Panel
+
+== Panel マウント処理 ==
+Panel -> Store : getters.panelContent
+activate Store
+
+note right of Store
+  getter名：panelContent  
+  処理：state.panelContentType に応じて  
+        typeAData, typeBData, ... を返す
+end note
+
+Store --> Panel : state.typeAData（例）
+deactivate Store
+
+Panel -> Panel : コメントリストに設定
+
+loop データ件数分
+  Panel -> Card : CardComponent生成（:data=item）
+end
+
+Panel -> Input : InputComponentマウント（v-modelバインド）
+
+note right of Panel
+  コメントエリア構成：  
+  - タイトル（固定）  
+  - カードエリア（データ分）  
+  - インプットエリア（v-model）  
+  - フッター（追加ボタン等）
+end note
+
+deactivate Panel
+deactivate Layout
+deactivate Page
+
+@enduml
