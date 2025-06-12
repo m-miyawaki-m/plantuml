@@ -1,0 +1,22 @@
+@startuml
+actor User
+participant "page.vue (mounted)" as Mounted
+participant "page.vue (methods)" as Methods
+participant "page.vue (watch)" as Watch
+participant "Vuex actions" as Actions
+participant "Vuex mutations" as Mutations
+participant "Vuex state" as State
+participant "API Server" as API
+
+User -> Mounted : 初期描画
+Mounted -> Methods : fetchData()
+Methods -> Actions : dispatch('fetchData')
+Actions -> API : axios.get()
+API --> Actions : data
+Actions -> Mutations : commit('setData', data)
+Mutations -> State : 更新
+
+note right of Watch
+  state.data が更新されたときに再描画ロジックを実行
+end note
+@enduml

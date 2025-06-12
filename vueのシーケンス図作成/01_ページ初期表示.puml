@@ -1,0 +1,36 @@
+@startuml 初期表示
+title 初期表示処理（Vue + Vuetify3 + Vuex）
+
+actor User
+participant "page.vue" as Page
+participant "MainLayout.vue" as Layout
+participant "Vuex Store" as Store
+participant "API Server" as API
+
+User -> Page : ページアクセス
+activate Page
+
+note right of Page
+  mounted() フックで API を呼び出す
+end note
+
+Page -> API : fetchOperationData()
+activate API
+API --> Page : 作戦データ + 制御情報
+deactivate API
+
+Page -> Store : commit('setOperationData', data)
+Page -> Store : commit('setTabIndex', 0)
+
+note right of Page
+  props経由で v-model や関数を Layout に渡す
+end note
+
+Page -> Layout : props でデータ・関数渡し
+
+Layout -> Store : getters.operationData
+Layout -> Store : getters.tabIndex
+
+Layout -> Layout : 各 area に slot 表示反映
+deactivate Page
+@enduml

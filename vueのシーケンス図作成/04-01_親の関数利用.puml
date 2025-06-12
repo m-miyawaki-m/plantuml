@@ -1,0 +1,20 @@
+@startuml
+title MainLayout エリア表示制御のシーケンス図（内部メソッド呼出あり）
+
+actor User
+participant "page.vue (data)" as ParentData
+participant "page.vue (methods)" as ParentMethods
+participant "MainLayout.vue (methods)" as LayoutMethods
+participant "MainLayout.vue (template)" as Layout
+
+== 初期表示 ==
+ParentData -> Layout : v-model:areaFlags = { main: true, panel: false }
+
+== MainLayout内でのボタン押下 ==
+User -> Layout : v-btnクリック
+Layout -> LayoutMethods : handleClick('panel')
+
+LayoutMethods -> ParentMethods : props.setAreaFlag('panel', true)
+ParentMethods -> ParentData : areaFlags.panel = true
+ParentData -> Layout : v-model:areaFlags 更新による再描画
+@enduml

@@ -1,0 +1,18 @@
+@startuml sample
+title 通常業務フロー（API連携 + 表示）
+
+actor User
+participant "page.vue" as Page
+participant "Vuex Store" as Store
+participant "API Server" as API
+
+User -> Page : ページアクセス
+Page -> API : fetchData()
+API --> Page : データ返却
+
+Page -> Store : commit('setData', data)
+Page -> Page : 表示更新（v-for等）
+
+User -> Page : ボタン押下
+Page -> Store : dispatch('toggleFlag')
+@enduml

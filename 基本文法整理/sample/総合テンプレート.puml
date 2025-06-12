@@ -1,0 +1,60 @@
+@startuml sample
+title ユーザー登録処理の全体シーケンス
+
+actor "エンドユーザー" as User
+box "フロントエンド" #E3F2FD
+  participant "登録フォーム" as Form
+end box
+box "バックエンド" #FFEBEE
+  control "ユーザーサービス" as UserService
+  entity "ユーザーDB" as UserDB
+end box
+
+' autonumber 1.0 1.0 increment 0.1
+
+User -> Form : 入力情報送信(name, email)
+note right of Form
+  フォームで入力値バリデーション実施
+end note
+
+Form -> UserService : validateAndRegister(data)
+activate UserService
+
+alt データ不備あり
+  UserService --> Form : エラーメッセージ返却
+  deactivate UserService
+else 登録処理続行
+  UserService -> UserDB : INSERT INTO users
+  activate UserDB
+  UserDB --> UserService : 登録成功
+  deactivate UserDB
+end
+
+' ✅ 修正された par ブロック
+par 確認メール送信
+  UserService -> Form : sendConfirmationEmail()
+' and ログ記録
+  UserService -> UserService : log("register success")
+end
+
+UserService --> Form : 登録完了ステータス
+deactivate UserService
+
+Form --> User : showResult(success)
+destroy Form
+
+note over User, UserService
+  この処理全体は最大30秒まで許容される
+end note
+
+group フォーム側の後処理
+  User -> User : フィードバック確認
+end group
+
+hide footbox
+skinparam backgroundColor #FAFAFA
+skinparam defaultFontName "Meiryo"
+skinparam sequenceArrowColor Navy
+skinparam participantPadding 20
+skinparam shadowing false
+@enduml

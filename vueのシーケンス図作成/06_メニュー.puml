@@ -1,0 +1,36 @@
+@startuml
+title DashboardPage.vue 初期表示とケバブメニューによる処理切替（責務ベース）
+
+actor User
+participant "DashboardPage.vue (created)" as Created
+participant "Vuex Store (actions)" as StoreActions
+participant "Vuex Store (mutations)" as StoreMutations
+participant "Vuex Store (state)" as StoreState
+participant "MainLayout.vue" as Layout
+participant "ListComponent.vue" as List
+participant "DashboardPage.vue (methods)" as PageMethods
+participant "ModalComponent.vue" as Modal
+participant "MainLayout (subarea)" as Subarea
+participant "API Server" as API
+
+== 初期描画 ==
+Created -> StoreActions : dispatch('fetchList')
+StoreActions -> API : GET /list
+API --> StoreActions : listData[]
+StoreActions -> StoreMutations : commit('setList', listData)
+StoreMutations -> StoreState : state.listData = listData
+
+Created -> Layout : v-slot:subarea に ListComponent(items = listData)
+
+== ケバブメニューA（モーダル表示） ==
+User -> List : メニューAクリック
+List -> PageMethods : props.openModal('ModalComponent')
+PageMethods -> Modal : 表示（全画面）
+
+== ケバブメニューB（subarea表示切替） ==
+User -> List : メニューBクリック
+List -> PageMethods : props.setSubAreaComponent('SubComponent')
+PageMethods -> StoreMutations : commit('setSubComponent', 'SubComponent')
+StoreMutations -> StoreState : subAreaComponent = SubComponent
+StoreState -> Subarea : v-slot:subarea で描画切替
+@enduml

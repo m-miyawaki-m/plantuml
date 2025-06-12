@@ -1,0 +1,33 @@
+@startuml
+title 初期表示：API呼び出しと Vuex ストアへの全保持
+
+actor User
+participant "page.vue" as Page
+participant "Vuex Store (actions)" as Actions
+participant "Vuex Store (mutations)" as Mutations
+participant "Vuex Store (state)" as State
+participant "API Server" as API
+
+User -> Page : ページアクセス
+activate Page
+
+note right of Page
+  mounted() または created() で dispatch 実行
+end note
+
+Page -> Actions : dispatch('fetchInitialData')
+activate Actions
+
+Actions -> API : axios.get('/api/init')
+activate API
+API --> Actions : レスポンスデータ（data + settings）
+deactivate API
+
+Actions -> Mutations : commit('setData', data)
+Actions -> Mutations : commit('setSettings', settings)
+deactivate Actions
+
+Mutations -> State : ストアに保存（data, settings）
+
+deactivate Page
+@enduml
