@@ -1,0 +1,60 @@
+@startuml DashboardPageFlow
+actor User
+participant DashboardPage
+participant VuexStore
+database API
+participant MainLayout
+participant HeaderComponent
+participant SubPanelComponent
+participant MainContentComponent
+
+== 初期表示 ==
+User -> DashboardPage : ページマウント（mounted）
+activate DashboardPage
+
+DashboardPage -> VuexStore : dispatch('dashboard/fetchAll')
+
+== データ取得 ==
+activate VuexStore
+
+note right of VuexStore
+  actions.fetchAll():
+    - GET /api/header
+    - GET /api/subarea
+    - GET /api/main
+end note
+
+VuexStore -> API : GET /api/header
+API --> VuexStore : ヘッダーデータ
+VuexStore -> VuexStore : commit('setHeaderData', ...)
+
+VuexStore -> API : GET /api/subarea
+API --> VuexStore : サブエリアデータ
+VuexStore -> VuexStore : commit('setSubareaData', ...)
+
+VuexStore -> API : GET /api/main
+API --> VuexStore : メイン表示データ
+VuexStore -> VuexStore : commit('setMainContent', ...)
+
+deactivate VuexStore
+
+== 各コンポーネント定義 ==
+DashboardPage -> MainLayout : v-model:showHeader/showSubArea/showFooter 設定
+note right of MainLayout
+  slots:
+    - #header: HeaderComponent
+    - #subarea: SubPanelComponent
+    - #main: MainContentComponent
+end note
+
+MainLayout -> HeaderComponent : slot 描画（mounted）
+HeaderComponent -> VuexStore : state.dashboard.headerData を参照
+
+MainLayout -> SubPanelComponent : slot 描画（mounted）
+SubPanelComponent -> VuexStore : state.dashboard.subareaData を参照
+
+MainLayout -> MainContentComponent : slot 描画（mounted）
+MainContentComponent -> VuexStore : state.dashboard.mainContent を参照
+
+deactivate DashboardPage
+@enduml

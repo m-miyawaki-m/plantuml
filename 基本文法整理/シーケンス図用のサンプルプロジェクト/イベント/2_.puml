@@ -1,0 +1,58 @@
+@startuml 2a_annotated_with_logic
+actor User
+participant MainLayout
+participant PageComponent
+
+== 「閉じる」操作 ==
+User -> MainLayout : 「閉じる」ボタンをクリック
+activate MainLayout
+
+MainLayout -> MainLayout : onClickToggle(show: boolean)
+note right of MainLayout
+  method: onClickToggle(show: boolean): void  
+  処理内容:
+    - ボタン種別に応じて表示/非表示を切り替える
+    - emit('update:showSubArea', show) を発火し、親に伝える
+  emits:
+    - 'update:showSubArea': boolean
+end note
+
+MainLayout -> PageComponent : emit('update:showSubArea', false)
+deactivate MainLayout
+
+activate PageComponent
+PageComponent -> PageComponent : showSubArea(false)
+note right of PageComponent
+  props: showSubArea (boolean)
+  処理内容:
+    - MainLayout からの props 更新を受け取る
+    - subarea 表示の有無を制御する（v-if）
+end note
+
+PageComponent --> MainLayout : props: showSubArea = false
+deactivate PageComponent
+
+note over MainLayout: subarea 非表示になる
+
+== 「開く」操作 ==
+User -> MainLayout : 「開く」ボタンをクリック
+activate MainLayout
+
+MainLayout -> MainLayout : onClickToggle(show: boolean)
+note right of MainLayout
+  method: onClickToggle(show: boolean): void  
+  処理内容:
+    - ボタン押下により subarea を表示
+    - emit('update:showSubArea', true)
+end note
+
+MainLayout -> PageComponent : emit('update:showSubArea', true)
+deactivate MainLayout
+
+activate PageComponent
+PageComponent -> PageComponent : showSubArea = true
+PageComponent --> MainLayout : props: showSubArea = true
+deactivate PageComponent
+
+note over MainLayout: subarea 表示になる
+@enduml

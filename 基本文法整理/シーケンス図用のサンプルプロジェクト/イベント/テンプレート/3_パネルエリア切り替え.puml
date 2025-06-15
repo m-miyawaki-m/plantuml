@@ -1,0 +1,63 @@
+
+@startuml panel_toggle
+actor User
+participant HeaderComponent
+participant Page as PageVue
+participant PanelArea
+participant VuexStore
+
+== パネルエリアの表示操作 ==
+User -> HeaderComponent : 「開」ボタンをクリック
+HeaderComponent -> PageVue : emit('update:showPanel', true)
+
+== パネルエリアの非表示操作 ==
+User -> HeaderComponent : 「閉」ボタンをクリック
+HeaderComponent -> PageVue : emit('update:showPanel', false)
+
+== 表示状態による分岐 ==
+alt showPanel == true
+  PageVue -> PanelArea : props.visible = true
+else showPanel == false
+  PageVue -> PanelArea : props.visible = false
+end
+
+note right of HeaderComponent
+  method: onClickToggle(show: boolean): void
+  処理内容:
+    - ボタン種別に応じて表示/非表示を切り替える
+    - v-model の値（props経由）を更新する
+    - store へ commit する、または emit('update:showPanel', show) を発火し、親に伝える
+  emits:
+    - 'update:showPanel': boolean
+  その他:
+    - store更新と連携して、watch によるUI切替を誘発する
+end note
+
+
+
+
+== パネルエリアの非表示操作 ==
+User -> HeaderComponent : 「閉」ボタンをクリック
+HeaderComponent -> VuexStore : commit('ui/setShowPanel', false)
+
+== パネルエリアの表示操作 ==
+User -> HeaderComponent : 「開」ボタンをクリック
+HeaderComponent -> VuexStore : commit('ui/setShowPanel', true)
+
+== store を監視 ==
+PageVue -> PageVue : watch(store.state.ui.showPanel)
+activate PageVue
+alt store.state.ui.showPanel == true
+  PageVue -> PanelArea : props.visible = true
+else store.state.ui.showPanel == false
+  PageVue -> PanelArea : props.visible = false
+end
+deactivate PageVue
+
+note right of PageVue
+  props: visible (boolean)
+  処理内容:
+    - store.state.ui.showPanel の変更を監視
+    - PanelArea の表示/非表示を制御する（v-if）
+end note
+@enduml

@@ -1,0 +1,33 @@
+@startuml switch_tab_with_alt
+actor User
+
+participant PageHeaderComponent
+participant VuexStore
+participant Page as PageVue
+participant MainArea
+participant PanelArea
+
+== タブ切替操作 ==
+User -> PageHeaderComponent : タブ1をクリック
+PageHeaderComponent -> VuexStore : commit('ui/setMainTab', 1)
+
+== Page.vue が store.state を監視 ==
+group watch: store.state.ui.mainTab が変更されたら
+  PageVue -> PageVue : updateMainAreaTab(1)
+
+  PageVue -> MainArea : props.activeTab = 1
+  PageVue -> PanelArea : props.activeTab = null
+end
+
+== 表示切替 ==
+alt mainTab = 1
+  MainArea -> MainArea : v-window index = 1（表示）
+  PanelArea -> PanelArea : v-window 非表示
+else mainTab = 2
+  MainArea -> MainArea : v-window index = 2（表示）
+  PanelArea -> PanelArea : v-window 非表示
+else その他
+  MainArea -> MainArea : 非表示
+  PanelArea -> PanelArea : 非表示
+end
+@enduml

@@ -1,0 +1,25 @@
+@startuml comment_edit_modal
+actor User
+participant CommentCard
+participant SubPanel
+participant VuexStore
+participant CommentEditArea
+
+== ケバブメニューから編集を選択 ==
+User -> CommentCard : ケバブメニュー → 編集
+CommentCard -> SubPanel : emit('editComment', commentId)
+SubPanel -> VuexStore : commit('comment/setEditTarget', commentId)
+
+== store を監視 ==
+group watch: store.state.comment.editTarget が更新されたら
+  SubPanel -> VuexStore : dispatch('comment/fetchById')
+  VuexStore -> SubPanel : 編集対象データ取得完了
+  SubPanel -> CommentEditArea : props.comment = store.state.comment.current
+  SubPanel -> CommentEditArea : 表示（v-model = true）
+end
+
+== 編集保存 ==
+User -> CommentEditArea : 保存ボタン押下
+CommentEditArea -> VuexStore : dispatch('comment/save')
+VuexStore -> CommentEditArea : 成功時 → 編集エリア非表示
+@enduml

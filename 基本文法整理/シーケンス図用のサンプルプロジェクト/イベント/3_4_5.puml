@@ -1,0 +1,45 @@
+@startuml sample3_4_5_refined
+actor User
+participant SubPanelComponent
+participant VuexStore
+participant ModalComponent
+participant TabSwitchComponent
+
+== リスト表示 ==
+SubPanelComponent -> VuexStore : state.subpanel.listData を参照
+note right of SubPanelComponent
+  表示用リストとして store から取得済みデータを参照。
+  初期取得は DashboardPage 側で dispatch 済み。
+end note
+
+== リストクリック ==
+User -> SubPanelComponent : リスト項目をクリック
+activate SubPanelComponent
+
+note right of SubPanelComponent
+  v-menu を表示（内部関数 openMenu()）
+end note
+
+alt モーダル表示が選択された場合
+  User -> SubPanelComponent : 「モーダル表示」選択
+  SubPanelComponent -> SubPanelComponent : openModal()
+  SubPanelComponent -> ModalComponent : emit('update:modelValue', true)
+  activate ModalComponent
+
+  User -> ModalComponent : 「閉じる」クリック
+  ModalComponent -> SubPanelComponent : emit('update:modelValue', false)
+  SubPanelComponent -> ModalComponent : emit → v-model = false（非表示）
+  deactivate ModalComponent
+
+else タブ切替表示が選択された場合
+  User -> SubPanelComponent : 「タブ切替表示」選択
+  SubPanelComponent -> SubPanelComponent : openTabSwitch()
+  SubPanelComponent -> TabSwitchComponent : emit('update:modelValue', true)
+  activate TabSwitchComponent
+
+  User -> TabSwitchComponent : タブ切替操作（v-window）
+  deactivate TabSwitchComponent
+end
+
+deactivate SubPanelComponent
+@enduml

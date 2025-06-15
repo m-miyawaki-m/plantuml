@@ -1,0 +1,51 @@
+@startuml showCommentPanel_fullFlow
+actor User
+participant HeaderComponent
+participant DashboardPage
+participant MainLayout
+participant PanelAreaComponent
+participant CommentCard
+participant CommentInputArea
+participant VuexStore
+participant vMenu
+database API
+
+== コメントパネルを開く ==
+User -> HeaderComponent : ボタン1 or ボタン2 をクリック
+HeaderComponent -> DashboardPage : emit('update:showPanel', true)
+DashboardPage -> MainLayout : v-model:showPanel = true
+MainLayout -> PanelAreaComponent : コメントリスト描画
+PanelAreaComponent -> VuexStore : state.comment.listData を参照
+
+== コメントカード表示 ==
+PanelAreaComponent -> CommentCard : n件分のカード表示
+
+== 編集メニューからコメント選択 ==
+User -> CommentCard : ケバブメニュー︙をクリック
+CommentCard -> vMenu : v-menu（編集）
+activate vMenu
+
+User -> vMenu : 「編集」を選択
+vMenu -> CommentCard : emit('selectComment', commentData)
+CommentCard -> PanelAreaComponent : emit('selectComment', commentData)
+PanelAreaComponent -> CommentInputArea : props:selectedComment = commentData
+deactivate vMenu
+
+== 入力・編集エリアで編集表示 ==
+User -> CommentInputArea : コメント入力・変更
+
+== 保存処理（新規または編集）==
+User -> CommentInputArea : 保存ボタンをクリック
+CommentInputArea -> VuexStore : dispatch('comment/saveComment', selectedComment)
+activate VuexStore
+
+VuexStore -> API : POST or PUT /api/comments
+API --> VuexStore : 成功レスポンス（保存後の最新コメント）
+VuexStore -> VuexStore : commit('updateCommentList', newList)
+deactivate VuexStore
+
+== リスト再描画 ==
+PanelAreaComponent -> VuexStore : state.comment.listData を再参照
+PanelAreaComponent -> CommentCard : n件分のカード再描画
+
+@enduml

@@ -1,0 +1,27 @@
+@startuml basic_watch
+actor User
+participant PageHeaderComponent
+participant MainArea
+participant Page as PageVue
+participant VuexStore
+
+== タブ切替 ==
+User -> PageHeaderComponent : タブ1クリック
+PageHeaderComponent -> VuexStore : commit('ui/setMainTab', 1)
+
+== store を監視 ==
+PageVue -> PageVue : watch(store.state.ui.mainTab)
+activate PageVue
+PageVue -> PageVue : updateMainAreaTab(1)
+PageVue -> MainArea : props.activeTab = 1
+deactivate PageVue
+
+== エリア表示 ==
+alt activeTab == 1
+  MainArea -> MainArea : v-window index = 1（表示）
+else activeTab == 2
+  MainArea -> MainArea : v-window index = 2（表示）
+else その他
+  MainArea -> MainArea : 非表示
+end
+@enduml
